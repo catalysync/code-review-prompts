@@ -1,0 +1,42 @@
+{
+  "name": "@catalysync/code-review-prompts",
+  "version": "0.1.0",
+  "description": "Layered code-review prompts: universal + per-language + per-framework. Consume from any LLM reviewer.",
+  "license": "MIT",
+  "files": [
+    "_base",
+    "typescript",
+    "javascript",
+    "python",
+    "ruby",
+    "go",
+    "rust",
+    "c",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "gray-matter": "^4.0.3",
+    "vitest": "^3.0.5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/catalysync/code-review-prompts.git"
+  },
+  "keywords": [
+    "code-review",
+    "llm",
+    "prompts",
+    "claude",
+    "claude-code",
+    "codex",
+    "pr-agent",
+    "coderabbit"
+  ],
+  "engines": {
+    "node": ">=20"
+  }
+}
