@@ -81,4 +81,35 @@ describe('prompt library', () => {
       });
     }
   });
+
+  describe('universal reviewer contract', () => {
+    const universal = all.get('_base/universal')!.body;
+
+    it('requires file:line evidence', () => {
+      expect(universal).toMatch(/## Evidence/);
+      expect(universal).toMatch(/`path:line`/);
+    });
+
+    it('defines the Important / Nit / Pre-existing tags', () => {
+      for (const tag of ['Important', 'Nit', 'Pre-existing']) expect(universal).toContain(`**${tag}**`);
+    });
+
+    it('asks for the class of bug once, with all locations', () => {
+      expect(universal).toMatch(/Flag the class, not the instance/);
+      expect(universal).toMatch(/locations/);
+    });
+
+    it('keeps the calibration table', () => {
+      expect(universal).toMatch(/\| changed lines \| typical issues \| suspicious if > \|/);
+    });
+
+    it('asks for a summary that starts with a count', () => {
+      expect(universal).toContain('No issues found.');
+    });
+
+    it('does not tell the model to post to GitHub', () => {
+      expect(universal).not.toMatch(/## Posting/);
+      expect(universal).not.toMatch(/gh api/);
+    });
+  });
 });

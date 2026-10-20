@@ -6,9 +6,9 @@ The premise: every useful code review is three layers of rules.
 
 | Layer | What | Example | Where it lives |
 |-------|------|---------|----------------|
-| 1 — universal | Role, diff format, calibration, output schema, tone | "Don't pad. Better empty than five low-confidence comments." | `_base/universal.md` |
+| 1 — universal | Role, diff format, evidence, tags, calibration, output schema, tone | "Every finding cites `path:line` and the code that proves it. Better empty than padded." | `_base/universal.md` |
 | 2 — stack | Language and framework idioms | "FastAPI login routes need an equivalent-cost dummy hash on the no-user path." | `python/+fastapi.md` |
-| 3 — project | Your repo's deliberate choices and house style | "We use HTTPBearer not OAuth2PasswordBearer. Don't suggest the swap." | Your repo's `.review/project.md` |
+| 3 — project | What failure looks like in your repo, deliberate choices, paths to skip | "We use HTTPBearer not OAuth2PasswordBearer. Don't suggest the swap." | Your repo's `REVIEW.md` |
 
 This repo ships layers 1 and 2. Layer 3 is yours to write — and the [`code-review`](https://github.com/catalysync/code-review) harness composes all three at runtime.
 
@@ -51,25 +51,37 @@ npx @catalysync/code-review pr 42    # review PR #42 in the current repo
 
 ## Add your project rules
 
-Create `.review/project.md` in your repo:
+Create a short `REVIEW.md` at your repo root (the format Anthropic's Claude Code team describes in "How the Claude Code team does code review"):
 
 ```markdown
----
-id: my-project
-extends: [python/+fastapi]
----
+# Review rules
 
-## NOT bugs — don't flag
+## What failure looks like here
+Money is computed wrong or a royalty is paid twice. Flag anything that can change an amount.
 
-- We deliberately use `HTTPBearer(auto_error=False)` to control the error envelope. Don't suggest `OAuth2PasswordBearer`.
-- Lowercase commit messages ≤30 chars are house style. Don't suggest conventional-commits.
+## Not bugs — don't flag
+- We deliberately use `HTTPBearer(auto_error=False)` to control the error envelope.
 
-## House-specific checks
+## Rules
+- At most 3 nits per review.
+- Every finding cites `path:line` and quotes the code. No guesses from names.
+- Start the summary with the count; say "No issues found." when there's nothing.
 
-- Migrations go one-table-per-file. Flag a single migration that touches multiple tables.
+## Skip
+- `db/schema.rb`
+- `vendor/`
 ```
 
-A template lives at `templates/project.md` in the harness repo.
+Keep it short; move a recurring review comment into it instead of re-arguing it on every PR. The harness also still reads the older `.review/project.md`. `code-review init` scaffolds a `REVIEW.md` template.
+
+## What the universal layer asks of the model
+
+- **Evidence**: `path:line` plus the quoted code for every finding. No invented columns, methods or files.
+- **Tags**: `Important` (problem in changed code), `Nit` (capped at 3), `Pre-existing` (real, but in code the PR didn't touch; never blocks).
+- **Class of bug**: report a repeated mistake once and list every location.
+- **Summary**: starts with a count; plainly "No issues found." when clean.
+- **Calibration**: an issue-count table by PR size, so the model doesn't pad.
+- Output via a `submit_review` tool call (or the YAML schema as a fallback). The model never posts anything itself.
 
 ## Contributing a stack
 
